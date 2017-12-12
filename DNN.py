@@ -1,27 +1,33 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""这个程序用于实现单隐层的BP算法"""
+"""这个程序用于实现多层神经网络"""
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-class SLNN(object):
-    """单隐层神经网络"""
-    def __init__(self,n0,n1,n2):
-        """n2:输出层神经元个数
-        n1:隐藏层神经元数目
-        n0：输入层神经元数目，也就是样本维度"""
-        #隐层-输出层链接矩阵
-        self.w1=np.random.uniform(size=(n1,n0))*0.1
-        #输入层-隐层链接矩阵
-        self.w2=np.random.uniform(size=(n2,n1))*0.1
-        #输出层阈值
-        self.b2=np.zeros((n2,1))
-        #隐层阈值
-        self.b1=np.zeros((n1,1))
-        #各层的激活函数，输入层不存在激活函数，设定为0
-        self.actFun=np.array([0,2,1])
+class DNN(object):
+    """多层神经网络"""
+    def __init__(self,L):
+        """L：描述每层神经结点的数目。
+        L[0]:表示输入层，也就是样本的维度
+        L[n]:表示第n层的神经结点数目"""
+        self.L=L
+        N=L.shape[0]
+
+        #链接系数
+        self.W=[None]*N
+
+        # 各层阈值
+        self.B =[None]*N
+
+        for i in range(1,N):
+            self.W[i]=np.random.uniform(size=(L[i],L[i-1]))*0.1
+            self.B[i]=np.zeros((L[i],1))
+
+        self.actFun=np.zeros(N)+2
+        self.actFun[N-1]=1
+        self.actFun[0]=0
 
 
     def fit(self,X,Y):
@@ -31,53 +37,53 @@ class SLNN(object):
         # 修正步长
         eta = 0.5
         m=X.shape[1]
-        maxGen=1000
+        N=self.L.shape[0]
+        maxGen=2000
+        ratio=np.zeros(maxGen+1)
         gen=0
-        w1=self.w1
-        b1=self.b1
-        w2=self.w2
-        b2=self.b2
         maxRatio=0.95
+
+        Z=[None]*(N)
+        A=[None]*(N)
+        dZ=[None]*(N)
+        dW=[None]*(N)
+        dB=[None]*(N)
+
+        A[0]=X
         while gen<maxGen:
             gen+=1
-            Z1=np.dot(w1,X)+b1
-            A1=self.Activation(Z1,self.actFun[1])
-            Z2=np.dot(w2,A1)+b2
-            A2=self.Activation(Z2,self.actFun[2])
-            J=-np.sum(Y*np.log(A2)+(1-Y)*np.log(1-A2))/m
+            for i in range(1,N):
+                Z[i]=np.dot(self.W[i],A[i-1])+self.B[i]
+                A[i]=self.Activation(Z[i],self.actFun[i])
 
-            ratio=A2//0.5
-            ratio[ratio==2]=1
-            ratio=(m-np.sum(np.abs(ratio-Y)))/m
-            if ratio>maxRatio:
+            J=-np.sum(Y*np.log(A[N-1])+(1-Y)*np.log(1-A[N-1]))/m
+
+            out=A[N-1]//0.5
+            out[out==2]=1
+            ratio[gen]=(m-np.sum(np.abs(out-Y)))/m
+            if ratio[gen]>maxRatio:
                 break
 
-
-
-            dZ2=A2-Y
-            dW2=np.dot(dZ2,A1.T)/m
-            db2=np.sum(dZ2,axis=1,keepdims=True)/m
-            dZ1=np.dot(w2.T,dZ2)*self.derivative(Z1,kind=self.actFun[1])
-            dW1=np.dot(dZ1,X.T)/m
-            db1=np.sum(dZ1,axis=1,keepdims=True)/m
-
-            w2-=eta*dW2
-            b2-=eta*db2
-            w1-=eta*dW1
-            b1-=eta*db1
-        self.w1=w1
-        self.w2=w2
-        self.b1=b1
-        self.b2=b2
-        print(gen,ratio)
+            dZ[N-1]=A[N-1]-Y
+            for i in range(N-1,0,-1):
+                dW[i]=np.dot(dZ[i],A[i-1].T)/m
+                dB[i]=np.sum(dZ[i],axis=1,keepdims=True)/m
+                self.W[i]-=eta*dW[i]
+                self.B[i]-=eta*dB[i]
+                if i>1:
+                    dZ[i-1]=np.dot(self.W[i].T,dZ[i])*self.derivative(Z[i-1],self.actFun[i-1])
+        np.set_printoptions(threshold=np.inf)
+        print(ratio)
 
 
     def transform(self,x):
-        z1 = np.dot(self.w1, x)
-        a1 = self.Activation(z1,self.actFun[1])
-        z2 = np.dot(self.w2,a1)
-        a2 = self.Activation(z2,self.actFun[2])
-        return a2//0.5
+        A=x
+        N=self.L.shape[0]
+        for i in range(1,N):
+            Z=np.dot(self.W[i],A)+self.B[i]
+            A=self.Activation(Z,self.actFun[i])
+
+        return A//0.5
 
     def Activation(self,X,kind=1):
         """激活函数：
@@ -125,7 +131,8 @@ class SLNN(object):
 
 
 if __name__=='__main__':
-    nn=SLNN(2,4,1)
+    L=np.array([2,4,2,1])
+    nn=DNN(L)
     theta=0.4
     x1=np.random.normal(1,theta,50)
     x2 = np.random.normal(1, theta, 50)
