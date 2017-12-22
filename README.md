@@ -30,3 +30,11 @@
 
 ## 正则化，归一化，参数初始化
 对应文件Regularization.py。在DNN.py的基础上添加正则化，归一化以及参数初始化。该部分内容对应《深度学习》课程第二周第一部分。注意这部分内容没有实现梯度检验，因为个人认为这部分是在编写神经网络程序中使用的检验技术
+
+## mini batch算法
+这个算法也写在Regularization.py中，函数fit_miniBatch()就是这个方法的实现
+
+## 动量梯度下降法
+这个算法对应Regularization.py中的fit_momentum()函数
+
+## Adam optimization algorithm
