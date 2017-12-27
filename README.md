@@ -38,3 +38,10 @@
 这个算法对应Regularization.py中的fit_momentum()函数
 
 ## Adam optimization algorithm
+算法对应Regularization.py中的fit_Adam()函数
+
+## Batch Normalize
+Batch Normalize算法于2015年提出，通过对每一层白化，使得前几层的变化不会影响本层的数据分布，由此加速神经网络的收敛。代码位于BatchNormal.py中
+
+## SoftMax
+为使神经网络模型应对多分类任务，将最后一层的激活函数修改为softmax函数。程序在SoftMax.py

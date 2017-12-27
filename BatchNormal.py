@@ -63,24 +63,25 @@ class DNN(object):
         gen = 0
         maxRatio = 0.95
 
-        Z = [None] * (N)
-        A = [None] * (N+1)
-        #存储
-        Z1 = [None]*N
-        Z2 = [None]*N
-        dZ = [None] * (N)
-        dA=[None]*N
-        dZ1=[None]*N
-        dZ2=[None]*N
-        dW = [None] * (N)
-        dGamma = [None] * (N)
-        dBeta = [None]*N
-        dVar=[None]*N
-        dMu=[None]*N
+        Z   = [None]*N
+        A   = [None]*(N+1)
+        Z1  = [None]*N
+        Z2  = [None]*N
+        dZ  = [None]*N
+        dA  = [None]*N
+        dZ1 = [None]*N
+        dZ2 = [None]*N
+        dW  = [None]*N
+        dMu = [None]*N
+        mu  = [None]*N
+        var = [None]*N
+        dGamma  =[None]*N
+        dBeta   =[None]*N
+        dVar    =[None]*N
+
         beta1=0.9
         beta2=0.9
-        mu=[None]*N
-        var=[None]*N
+
 
         while gen < maxGen:
             index=gen%len(X_batch)
@@ -179,7 +180,7 @@ class DNN(object):
                 Z = A
             else:
                 Z = np.dot(self.W[i], A)
-            Z1 = (Z - self.mu[i]) / (self.std[i] + self.epsilon)
+            Z1 = (Z - self.mu[i]) / np.sqrt(self.var[i] + self.epsilon)
             Z2 = self.gamma[i] * Z1 + self.beta[i]
             A = self.Activation(Z2, self.actFun[i])
         Z=np.dot(self.W[N-1], A)
