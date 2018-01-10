@@ -153,7 +153,7 @@ class DNN(object):
 
 
 if __name__=='__main__':
-    L=np.array([2,6,4,3])
+    L=np.array([2,4,6,4,3])
     nn=DNN(L)
     theta=0.4
     x1=np.random.normal(1,theta,50)
